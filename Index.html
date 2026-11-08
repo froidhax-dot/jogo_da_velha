@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Jogo da Velha Pro</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="container">
+    <h1>Jogo da Velha</h1>
+    <div id="status" class="status">Vez do jogador: <span id="turn">X</span></div>
+
+    <div class="board" id="board">
+      <button class="cell" data-index="0" aria-label="Quadrado 1"></button>
+      <button class="cell" data-index="1" aria-label="Quadrado 2"></button>
+      <button class="cell" data-index="2" aria-label="Quadrado 3"></button>
+      <button class="cell" data-index="3" aria-label="Quadrado 4"></button>
+      <button class="cell" data-index="4" aria-label="Quadrado 5"></button>
+      <button class="cell" data-index="5" aria-label="Quadrado 6"></button>
+      <button class="cell" data-index="6" aria-label="Quadrado 7"></button>
+      <button class="cell" data-index="7" aria-label="Quadrado 8"></button>
+      <button class="cell" data-index="8" aria-label="Quadrado 9"></button>
+    </div>
+
+    <button id="reset-btn" class="btn">Reiniciar Partida</button>
+  </main>
+  <script src="script.js"></script>
+</body>
+</html>
