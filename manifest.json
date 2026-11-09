@@ -1,9 +1,17 @@
 {
-  "name": "Jogo da Velha moderno",
-  "short_name": "Jogo da velha moderno",
+  "name": "Jogo da Velha Moderno",
+  "short_name": "Velha Moderno",
   "description": "Um jogo da velha simples e elegante com estilo neon para Android.",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#0f172a",
-  "theme_color": "#0284c7"
+  "theme_color": "#0284c7",
+  "icons": [
+    {
+      "src": "icone-app.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
 }
