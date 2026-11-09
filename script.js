@@ -1,12 +1,10 @@
 document.addEventListener("DOMContentLoaded", () => {
-  // Telas do App
   const mainMenu = document.getElementById("main-menu");
   const startMenu = document.getElementById("start-menu");
   const difficultyMenu = document.getElementById("difficulty-menu");
   const optionsMenu = document.getElementById("options-menu");
   const gameScreen = document.getElementById("game-screen");
 
-  // Botões de Navegação do Menu
   const btnGotoStart = document.getElementById("btn-goto-start");
   const btnGotoOptions = document.getElementById("btn-goto-options");
   const btnExit = document.getElementById("btn-exit");
@@ -15,19 +13,16 @@ document.addEventListener("DOMContentLoaded", () => {
   const btnBackFromOptions = document.getElementById("btn-back-from-options");
   const btnQuitGame = document.getElementById("btn-quit-game");
 
-  // Modos de Jogo
   const btnMode2P = document.getElementById("btn-mode-2p");
   const btnModeIA = document.getElementById("btn-mode-ia");
   const btnDiffEasy = document.getElementById("btn-diff-easy");
   const btnDiffHard = document.getElementById("btn-diff-hard");
 
-  // Elementos do Jogo
   const cells = document.querySelectorAll(".cell");
   const turnDisplay = document.getElementById("turn");
   const statusDisplay = document.getElementById("status");
   const resetButton = document.getElementById("reset-btn");
 
-  // Elementos de Áudio
   const bgMusic = document.getElementById("bg-music");
   const touchSound = document.getElementById("touch-sound");
   const musicToggle = document.getElementById("music-toggle");
@@ -36,8 +31,8 @@ document.addEventListener("DOMContentLoaded", () => {
   let boardState = ["", "", "", "", "", "", "", "", ""];
   let currentPlayer = "X";
   let isGameActive = true;
-  let gameMode = "2p"; // "2p" ou "ia"
-  let difficulty = "hard"; // "easy" ou "hard"
+  let gameMode = "2p";
+  let difficulty = "hard";
 
   const WINNING_COMBINATIONS = [
     [0, 1, 2], [3, 4, 5], [6, 7, 8],
@@ -45,7 +40,6 @@ document.addEventListener("DOMContentLoaded", () => {
     [0, 4, 8], [2, 4, 6]
   ];
 
-  // --- CONTROLE DE TELAS ---
   function showScreen(screen) {
     [mainMenu, startMenu, difficultyMenu, optionsMenu, gameScreen].forEach(s => s.classList.add("hidden"));
     screen.classList.remove("hidden");
@@ -66,7 +60,6 @@ document.addEventListener("DOMContentLoaded", () => {
     alert("Você pode fechar o aplicativo agora.");
   });
 
-  // Seleção de Modos
   btnMode2P.addEventListener("click", () => {
     gameMode = "2p";
     startGame();
@@ -87,7 +80,6 @@ document.addEventListener("DOMContentLoaded", () => {
     startGame();
   });
 
-  // --- CONTROLE DE ÁUDIO ---
   function playTouchSound() {
     if (sfxToggle.checked && touchSound) {
       touchSound.currentTime = 0;
@@ -116,7 +108,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // --- LÓGICA DO JOGO ---
   function startGame() {
     resetGame();
     showScreen(gameScreen);
@@ -128,7 +119,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const index = parseInt(cell.getAttribute("data-index"));
 
     if (boardState[index] !== "" || !isGameActive) return;
-    if (gameMode === "ia" && currentPlayer === "O") return; // Impede clique se for vez da IA
+    if (gameMode === "ia" && currentPlayer === "O") return;
 
     playTouchSound();
     makeMove(index, currentPlayer);
