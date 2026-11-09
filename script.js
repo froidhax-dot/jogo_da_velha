@@ -136,6 +136,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const cell = cells[index];
     cell.textContent = player;
     cell.style.color = player === "X" ? "#38bdf8" : "#f43f5e";
+    
+    // Adiciona animação de pop
+    cell.classList.add("pop");
+    setTimeout(() => cell.classList.remove("pop"), 250);
+
     evaluateGame();
 
     if (isGameActive) {
@@ -219,21 +224,26 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function evaluateGame() {
-    let roundWon = false;
+    let winningCombination = null;
     let winningPlayer = "";
 
     for (let i = 0; i < WINNING_COMBINATIONS.length; i++) {
       const [a, b, c] = WINNING_COMBINATIONS[i];
       if (boardState[a] && boardState[a] === boardState[b] && boardState[a] === boardState[c]) {
-        roundWon = true;
+        winningCombination = WINNING_COMBINATIONS[i];
         winningPlayer = boardState[a];
         break;
       }
     }
 
-    if (roundWon) {
+    if (winningCombination) {
       statusDisplay.textContent = `Vitória do Jogador ${winningPlayer}!`;
       isGameActive = false;
+
+      // Destaca as células vencedoras
+      winningCombination.forEach(index => {
+        cells[index].classList.add("win");
+      });
       return;
     }
 
@@ -249,7 +259,10 @@ document.addEventListener("DOMContentLoaded", () => {
     currentPlayer = "X";
     isGameActive = true;
     statusDisplay.innerHTML = 'Vez do jogador: <span id="turn">X</span>';
-    cells.forEach(cell => (cell.textContent = ""));
+    cells.forEach(cell => {
+      cell.textContent = "";
+      cell.classList.remove("win", "pop");
+    });
   }
 
   cells.forEach(cell => cell.addEventListener("click", handleCellClick));
