@@ -1,14 +1,14 @@
-Document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", () => {
   const cells = document.querySelectorAll(".cell");
   const turnDisplay = document.getElementById("turn");
   const statusDisplay = document.getElementById("status");
   const resetButton = document.getElementById("reset-btn");
-  const difficultySelect = document.getElementById("difficulty-select"); // Seletor de dificuldade
+  const difficultySelect = document.getElementById("difficulty-select");
 
   let boardState = ["", "", "", "", "", "", "", "", ""];
   let currentPlayer = "X";
   let isGameActive = true;
-  let difficulty = "hard"; // Dificuldade padrão
+  let difficulty = difficultySelect ? difficultySelect.value : "hard";
 
   const WINNING_COMBINATIONS = [
     [0, 1, 2], [3, 4, 5], [6, 7, 8], // Linhas
@@ -16,7 +16,6 @@ Document.addEventListener("DOMContentLoaded", () => {
     [0, 4, 8], [2, 4, 6]             // Diagonais
   ];
 
-  // Atualiza a dificuldade se houver seletor na tela
   if (difficultySelect) {
     difficultySelect.addEventListener("change", (e) => {
       difficulty = e.target.value;
@@ -28,7 +27,6 @@ Document.addEventListener("DOMContentLoaded", () => {
     const cell = e.target;
     const index = parseInt(cell.getAttribute("data-index"));
 
-    // Impede clique se a casa estiver ocupada, jogo pausado ou se for turno da IA
     if (boardState[index] !== "" || !isGameActive || currentPlayer === "O") return;
 
     makeMove(index, "X");
@@ -36,8 +34,6 @@ Document.addEventListener("DOMContentLoaded", () => {
     if (isGameActive) {
       currentPlayer = "O";
       turnDisplay.textContent = currentPlayer;
-      
-      // Pequeno atraso de meio segundo para simular o "pensamento" da IA
       setTimeout(handleAIMove, 400);
     }
   }
@@ -69,7 +65,6 @@ Document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // --- NÍVEL FÁCIL: Escolha aleatória ---
   function getRandomMove() {
     const emptyCells = boardState
       .map((val, idx) => (val === "" ? idx : null))
@@ -80,7 +75,6 @@ Document.addEventListener("DOMContentLoaded", () => {
     return emptyCells[randomIndex];
   }
 
-  // --- NÍVEL DIFÍCIL: Algoritmo Minimax ---
   function getBestMoveMinimax() {
     let bestScore = -Infinity;
     let bestMove;
@@ -165,6 +159,9 @@ Document.addEventListener("DOMContentLoaded", () => {
     boardState = ["", "", "", "", "", "", "", "", ""];
     currentPlayer = "X";
     isGameActive = true;
+    if (difficultySelect) {
+      difficulty = difficultySelect.value;
+    }
     statusDisplay.innerHTML = 'Vez do jogador: <span id="turn">X</span>';
     cells.forEach(cell => (cell.textContent = ""));
   }
