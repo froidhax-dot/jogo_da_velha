@@ -1,40 +1,142 @@
 document.addEventListener("DOMContentLoaded", () => {
+  // Telas do App
+  const mainMenu = document.getElementById("main-menu");
+  const startMenu = document.getElementById("start-menu");
+  const difficultyMenu = document.getElementById("difficulty-menu");
+  const optionsMenu = document.getElementById("options-menu");
+  const gameScreen = document.getElementById("game-screen");
+
+  // Botões de Navegação do Menu
+  const btnGotoStart = document.getElementById("btn-goto-start");
+  const btnGotoOptions = document.getElementById("btn-goto-options");
+  const btnExit = document.getElementById("btn-exit");
+  const btnBackToMain = document.getElementById("btn-back-to-main");
+  const btnBackToStart = document.getElementById("btn-back-to-start");
+  const btnBackFromOptions = document.getElementById("btn-back-from-options");
+  const btnQuitGame = document.getElementById("btn-quit-game");
+
+  // Modos de Jogo
+  const btnMode2P = document.getElementById("btn-mode-2p");
+  const btnModeIA = document.getElementById("btn-mode-ia");
+  const btnDiffEasy = document.getElementById("btn-diff-easy");
+  const btnDiffHard = document.getElementById("btn-diff-hard");
+
+  // Elementos do Jogo
   const cells = document.querySelectorAll(".cell");
   const turnDisplay = document.getElementById("turn");
   const statusDisplay = document.getElementById("status");
   const resetButton = document.getElementById("reset-btn");
-  const difficultySelect = document.getElementById("difficulty-select");
+
+  // Elementos de Áudio
+  const bgMusic = document.getElementById("bg-music");
+  const touchSound = document.getElementById("touch-sound");
+  const musicToggle = document.getElementById("music-toggle");
+  const sfxToggle = document.getElementById("sfx-toggle");
 
   let boardState = ["", "", "", "", "", "", "", "", ""];
   let currentPlayer = "X";
   let isGameActive = true;
-  let difficulty = difficultySelect ? difficultySelect.value : "hard";
+  let gameMode = "2p"; // "2p" ou "ia"
+  let difficulty = "hard"; // "easy" ou "hard"
 
   const WINNING_COMBINATIONS = [
-    [0, 1, 2], [3, 4, 5], [6, 7, 8], // Linhas
-    [0, 3, 6], [1, 4, 7], [2, 5, 8], // Colunas
-    [0, 4, 8], [2, 4, 6]             // Diagonais
+    [0, 1, 2], [3, 4, 5], [6, 7, 8],
+    [0, 3, 6], [1, 4, 7], [2, 5, 8],
+    [0, 4, 8], [2, 4, 6]
   ];
 
-  if (difficultySelect) {
-    difficultySelect.addEventListener("change", (e) => {
-      difficulty = e.target.value;
-      resetGame();
-    });
+  // --- CONTROLE DE TELAS ---
+  function showScreen(screen) {
+    [mainMenu, startMenu, difficultyMenu, optionsMenu, gameScreen].forEach(s => s.classList.add("hidden"));
+    screen.classList.remove("hidden");
+  }
+
+  btnGotoStart.addEventListener("click", () => showScreen(startMenu));
+  btnGotoOptions.addEventListener("click", () => showScreen(optionsMenu));
+  btnBackToMain.addEventListener("click", () => showScreen(mainMenu));
+  btnBackToStart.addEventListener("click", () => showScreen(startMenu));
+  btnBackFromOptions.addEventListener("click", () => showScreen(mainMenu));
+  btnQuitGame.addEventListener("click", () => {
+    stopMusic();
+    showScreen(mainMenu);
+  });
+
+  btnExit.addEventListener("click", () => {
+    window.close();
+    alert("Você pode fechar o aplicativo agora.");
+  });
+
+  // Seleção de Modos
+  btnMode2P.addEventListener("click", () => {
+    gameMode = "2p";
+    startGame();
+  });
+
+  btnModeIA.addEventListener("click", () => {
+    gameMode = "ia";
+    showScreen(difficultyMenu);
+  });
+
+  btnDiffEasy.addEventListener("click", () => {
+    difficulty = "easy";
+    startGame();
+  });
+
+  btnDiffHard.addEventListener("click", () => {
+    difficulty = "hard";
+    startGame();
+  });
+
+  // --- CONTROLE DE ÁUDIO ---
+  function playTouchSound() {
+    if (sfxToggle.checked && touchSound) {
+      touchSound.currentTime = 0;
+      touchSound.play().catch(() => {});
+    }
+  }
+
+  function startMusic() {
+    if (musicToggle.checked && bgMusic) {
+      bgMusic.play().catch(() => {});
+    }
+  }
+
+  function stopMusic() {
+    if (bgMusic) {
+      bgMusic.pause();
+      bgMusic.currentTime = 0;
+    }
+  }
+
+  musicToggle.addEventListener("change", () => {
+    if (musicToggle.checked) {
+      bgMusic.play().catch(() => {});
+    } else {
+      bgMusic.pause();
+    }
+  });
+
+  // --- LÓGICA DO JOGO ---
+  function startGame() {
+    resetGame();
+    showScreen(gameScreen);
+    startMusic();
   }
 
   function handleCellClick(e) {
     const cell = e.target;
     const index = parseInt(cell.getAttribute("data-index"));
 
-    if (boardState[index] !== "" || !isGameActive || currentPlayer === "O") return;
+    if (boardState[index] !== "" || !isGameActive) return;
+    if (gameMode === "ia" && currentPlayer === "O") return; // Impede clique se for vez da IA
 
-    makeMove(index, "X");
-    
+    playTouchSound();
+    makeMove(index, currentPlayer);
+
     if (isGameActive) {
-      currentPlayer = "O";
-      turnDisplay.textContent = currentPlayer;
-      setTimeout(handleAIMove, 400);
+      if (gameMode === "ia" && currentPlayer === "O") {
+        setTimeout(handleAIMove, 400);
+      }
     }
   }
 
@@ -44,24 +146,21 @@ document.addEventListener("DOMContentLoaded", () => {
     cell.textContent = player;
     cell.style.color = player === "X" ? "#38bdf8" : "#f43f5e";
     evaluateGame();
+
+    if (isGameActive) {
+      currentPlayer = currentPlayer === "X" ? "O" : "X";
+      turnDisplay.textContent = currentPlayer;
+    }
   }
 
   function handleAIMove() {
     if (!isGameActive) return;
 
-    let index;
-    if (difficulty === "easy") {
-      index = getRandomMove();
-    } else {
-      index = getBestMoveMinimax();
-    }
+    let index = difficulty === "easy" ? getRandomMove() : getBestMoveMinimax();
 
     if (index !== undefined) {
+      playTouchSound();
       makeMove(index, "O");
-      if (isGameActive) {
-        currentPlayer = "X";
-        turnDisplay.textContent = currentPlayer;
-      }
     }
   }
 
@@ -71,8 +170,7 @@ document.addEventListener("DOMContentLoaded", () => {
       .filter(val => val !== null);
 
     if (emptyCells.length === 0) return;
-    const randomIndex = Math.floor(Math.random() * emptyCells.length);
-    return emptyCells[randomIndex];
+    return emptyCells[Math.floor(Math.random() * emptyCells.length)];
   }
 
   function getBestMoveMinimax() {
@@ -159,9 +257,6 @@ document.addEventListener("DOMContentLoaded", () => {
     boardState = ["", "", "", "", "", "", "", "", ""];
     currentPlayer = "X";
     isGameActive = true;
-    if (difficultySelect) {
-      difficulty = difficultySelect.value;
-    }
     statusDisplay.innerHTML = 'Vez do jogador: <span id="turn">X</span>';
     cells.forEach(cell => (cell.textContent = ""));
   }
