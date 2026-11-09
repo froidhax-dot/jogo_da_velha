@@ -1,9 +1,9 @@
+/* Configuração básica e reset */
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  -webkit-tap-highlight-color: transparent;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 body {
@@ -13,66 +13,164 @@ body {
   justify-content: center;
   align-items: center;
   min-height: 100vh;
+  overflow: hidden;
 }
 
 .container {
+  width: 100%;
+  max-width: 400px;
+  padding: 20px;
+  text-align: center;
+}
+
+/* Sistema de telas (oculta as que não estão ativas) */
+.screen {
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: 90%;
-  max-width: 360px;
+  gap: 15px;
+  width: 100%;
 }
 
-h1 {
-  font-size: 1.8rem;
-  margin-bottom: 12px;
+.screen.hidden {
+  display: none !important;
+}
+
+h1, h2 {
   color: #38bdf8;
+  margin-bottom: 10px;
 }
 
-.status {
-  font-size: 1.1rem;
-  margin-bottom: 20px;
+/* Botões Padrão */
+.btn {
+  width: 100%;
+  padding: 12px 20px;
+  font-size: 16px;
+  font-weight: bold;
+  border: none;
+  border-radius: 8px;
+  background-color: #0284c7;
+  color: white;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
 }
 
+.btn:active {
+  transform: scale(0.98);
+}
+
+.btn:hover {
+  background-color: #0369a1;
+}
+
+.btn-secondary {
+  background-color: #334155;
+}
+
+.btn-secondary:hover {
+  background-color: #475569;
+}
+
+.btn-danger {
+  background-color: #e11d48;
+}
+
+.btn-danger:hover {
+  background-color: be123c;
+}
+
+.btn-disabled {
+  background-color: #1e293b;
+  color: #64748b;
+  cursor: not-allowed;
+}
+
+/* Tabuleiro */
 .board {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
+  gap: 8px;
   width: 100%;
-  aspect-ratio: 1 / 1;
+  max-width: 320px;
+  margin: 15px auto;
 }
 
 .cell {
+  aspect-ratio: 1;
   background-color: #1e293b;
-  border: 2px solid #334155;
-  border-radius: 12px;
-  font-size: 2.5rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 40px;
   font-weight: bold;
-  color: #f8fafc;
+  color: #38bdf8;
+  cursor: pointer;
   display: flex;
   justify-content: center;
   align-items: center;
-  cursor: pointer;
-  transition: background-color 0.15s ease;
+  transition: background 0.2s;
 }
 
 .cell:active {
   background-color: #334155;
 }
 
-.btn {
-  margin-top: 24px;
-  width: 100%;
-  padding: 14px;
-  font-size: 1rem;
-  font-weight: 600;
-  border: none;
-  border-radius: 8px;
-  background-color: #0284c7;
-  color: #ffffff;
-  cursor: pointer;
+.status {
+  font-size: 18px;
+  margin-bottom: 10px;
+  font-weight: 500;
 }
 
-.btn:active {
-  background-color: #0369a1;
+/* Estilo para as Opções (Interruptores Toggle) */
+.option-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  background-color: #1e293b;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 16px;
+}
+
+/* Switch Toggle CSS */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 26px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: #475569;
+  transition: .3s;
+  border-radius: 26px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 20px;
+  width: 20px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: .3s;
+  border-radius: 50%;
+}
+
+input:checked + .slider {
+  background-color: #0284c7;
+}
+
+input:checked + .slider:before {
+  transform: translateX(24px);
 }
