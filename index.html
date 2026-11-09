@@ -4,38 +4,86 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>Jogo da Velha Pro</title>
-  <!-- Link do Manifesto PWA -->
   <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <main class="container">
-    <h1>Jogo da Velha</h1>
     
-    <div class="menu-controls">
-      <label for="difficulty-select">Escolha a Dificuldade:</label>
-      <select id="difficulty-select">
-        <option value="hard">Difícil (IA Inteligente)</option>
-        <option value="easy">Fácil (Aleatório)</option>
-      </select>
+    <!-- TELA 1: MENU PRINCIPAL -->
+    <div id="main-menu" class="screen">
+      <h1>Jogo da Velha</h1>
+      <button id="btn-goto-start" class="btn">Iniciar a Partida</button>
+      <button id="btn-goto-options" class="btn">Opções</button>
+      <button id="btn-exit" class="btn btn-danger">Sair</button>
     </div>
 
-    <div id="status" class="status">Vez do jogador: <span id="turn">X</span></div>
-
-    <div class="board" id="board">
-      <button class="cell" data-index="0" aria-label="Quadrado 1"></button>
-      <button class="cell" data-index="1" aria-label="Quadrado 2"></button>
-      <button class="cell" data-index="2" aria-label="Quadrado 3"></button>
-      <button class="cell" data-index="3" aria-label="Quadrado 4"></button>
-      <button class="cell" data-index="4" aria-label="Quadrado 5"></button>
-      <button class="cell" data-index="5" aria-label="Quadrado 6"></button>
-      <button class="cell" data-index="6" aria-label="Quadrado 7"></button>
-      <button class="cell" data-index="7" aria-label="Quadrado 8"></button>
-      <button class="cell" data-index="8" aria-label="Quadrado 9"></button>
+    <!-- TELA 2: SUBMENU INICIAR PARTIDA -->
+    <div id="start-menu" class="screen hidden">
+      <h2>Modo de Jogo</h2>
+      <button id="btn-mode-2p" class="btn">2 Jogadores</button>
+      <button id="btn-mode-ia" class="btn">Jogador VS IA</button>
+      <button id="btn-mode-online" class="btn btn-disabled">Partida Online (Em breve)</button>
+      <button id="btn-back-to-main" class="btn btn-secondary">Voltar</button>
     </div>
 
-    <button id="reset-btn" class="btn">Reiniciar Partida</button>
+    <!-- TELA 3: SELEÇÃO DE DIFICULDADE (IA) -->
+    <div id="difficulty-menu" class="screen hidden">
+      <h2>Escolha a Dificuldade</h2>
+      <button id="btn-diff-easy" class="btn">Fácil (Aleatório)</button>
+      <button id="btn-diff-hard" class="btn">Difícil (Inteligente)</button>
+      <button id="btn-back-to-start" class="btn btn-secondary">Voltar</button>
+    </div>
+
+    <!-- TELA 4: OPÇÕES (MÚSICA E SOM) -->
+    <div id="options-menu" class="screen hidden">
+      <h2>Opções</h2>
+      
+      <div class="option-row">
+        <span>Música de Fundo</span>
+        <label class="switch">
+          <input type="checkbox" id="music-toggle" checked>
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <div class="option-row">
+        <span>Efeitos Sonoros (Touch)</span>
+        <label class="switch">
+          <input type="checkbox" id="sfx-toggle" checked>
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <button id="btn-back-from-options" class="btn btn-secondary">Voltar</button>
+    </div>
+
+    <!-- TELA 5: O TABULEIRO DO JOGO (Fica oculto até a partida começar) -->
+    <div id="game-screen" class="screen hidden">
+      <div id="status" class="status">Vez do jogador: <span id="turn">X</span></div>
+
+      <div class="board" id="board">
+        <button class="cell" data-index="0" aria-label="Quadrado 1"></button>
+        <button class="cell" data-index="1" aria-label="Quadrado 2"></button>
+        <button class="cell" data-index="2" aria-label="Quadrado 3"></button>
+        <button class="cell" data-index="3" aria-label="Quadrado 4"></button>
+        <button class="cell" data-index="4" aria-label="Quadrado 5"></button>
+        <button class="cell" data-index="5" aria-label="Quadrado 6"></button>
+        <button class="cell" data-index="6" aria-label="Quadrado 7"></button>
+        <button class="cell" data-index="7" aria-label="Quadrado 8"></button>
+        <button class="cell" data-index="8" aria-label="Quadrado 9"></button>
+      </div>
+
+      <button id="reset-btn" class="btn">Reiniciar Partida</button>
+      <button id="btn-quit-game" class="btn btn-secondary">Sair para o Menu</button>
+    </div>
+
   </main>
+
+  <!-- Áudios do Jogo (Música e Efeito de Toque) -->
+  <audio id="bg-music" loop src="assets/bg-music.mp3"></audio>
+  <audio id="touch-sound" src="assets/touch.mp3"></audio>
+
   <script src="script.js"></script>
 </body>
 </html>
