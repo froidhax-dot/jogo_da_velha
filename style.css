@@ -60,6 +60,18 @@ h1, h2 {
   text-shadow: 0 0 20px rgba(56, 189, 248, 0.3);
 }
 
+/* Badge de Perfil / Usuário */
+.user-badge {
+  background: rgba(30, 41, 59, 0.8);
+  border: 1px solid rgba(56, 189, 248, 0.2);
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 14px;
+  color: #38bdf8;
+  margin-bottom: 10px;
+  display: inline-block;
+}
+
 /* Botões com Estilo Neumorfismo / Gaming */
 .btn {
   width: 100%;
