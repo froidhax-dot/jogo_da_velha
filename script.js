@@ -1,10 +1,19 @@
 document.addEventListener("DOMContentLoaded", () => {
+  // Telas
+  const welcomeScreen = document.getElementById("welcome-screen");
   const mainMenu = document.getElementById("main-menu");
   const startMenu = document.getElementById("start-menu");
   const difficultyMenu = document.getElementById("difficulty-menu");
   const optionsMenu = document.getElementById("options-menu");
   const gameScreen = document.getElementById("game-screen");
 
+  // Botões de Autenticação / Welcome
+  const btnLogin = document.getElementById("btn-login");
+  const btnGuest = document.getElementById("btn-guest");
+  const dontShowAgainCheckbox = document.getElementById("dont-show-again");
+  const btnResetLoginPref = document.getElementById("btn-reset-login-pref");
+
+  // Botões do Menu
   const btnGotoStart = document.getElementById("btn-goto-start");
   const btnGotoOptions = document.getElementById("btn-goto-options");
   const btnExit = document.getElementById("btn-exit");
@@ -13,16 +22,19 @@ document.addEventListener("DOMContentLoaded", () => {
   const btnBackFromOptions = document.getElementById("btn-back-from-options");
   const btnQuitGame = document.getElementById("btn-quit-game");
 
+  // Modos de Jogo
   const btnMode2P = document.getElementById("btn-mode-2p");
   const btnModeIA = document.getElementById("btn-mode-ia");
   const btnDiffEasy = document.getElementById("btn-diff-easy");
   const btnDiffHard = document.getElementById("btn-diff-hard");
 
+  // Elementos do Tabuleiro
   const cells = document.querySelectorAll(".cell");
   const turnDisplay = document.getElementById("turn");
   const statusDisplay = document.getElementById("status");
   const resetButton = document.getElementById("reset-btn");
 
+  // Elementos de Áudio
   const bgMusic = document.getElementById("bg-music");
   const touchSound = document.getElementById("touch-sound");
   const musicToggle = document.getElementById("music-toggle");
@@ -40,11 +52,52 @@ document.addEventListener("DOMContentLoaded", () => {
     [0, 4, 8], [2, 4, 6]
   ];
 
+  // --- CONTROLE DE NAVEGAÇÃO ENTRE TELAS ---
   function showScreen(screen) {
-    [mainMenu, startMenu, difficultyMenu, optionsMenu, gameScreen].forEach(s => s.classList.add("hidden"));
+    [welcomeScreen, mainMenu, startMenu, difficultyMenu, optionsMenu, gameScreen].forEach(s => s.classList.add("hidden"));
     screen.classList.remove("hidden");
   }
 
+  // --- LÓGICA DE INICIALIZAÇÃO (LOGIN / CONVIDADO) ---
+  function checkInitialScreen() {
+    const skipWelcome = localStorage.getItem("skipWelcomeScreen");
+    const userLoggedIn = localStorage.getItem("isLoggedIn");
+
+    if (skipWelcome === "true" || userLoggedIn === "true") {
+      showScreen(mainMenu);
+    } else {
+      showScreen(welcomeScreen);
+    }
+  }
+
+  // Ação de Login (Placeholder para Firebase)
+  btnLogin.addEventListener("click", () => {
+    // Por enquanto simula o login efetuado com sucesso
+    localStorage.setItem("isLoggedIn", "true");
+    if (dontShowAgainCheckbox.checked) {
+      localStorage.setItem("skipWelcomeScreen", "true");
+    }
+    alert("Login realizado com sucesso!");
+    showScreen(mainMenu);
+  });
+
+  // Ação de Convidado
+  btnGuest.addEventListener("click", () => {
+    localStorage.setItem("isLoggedIn", "false");
+    if (dontShowAgainCheckbox.checked) {
+      localStorage.setItem("skipWelcomeScreen", "true");
+    }
+    showScreen(mainMenu);
+  });
+
+  // Botão em Opções para resetar a preferência da tela de login (caso queira ver a tela novamente)
+  btnResetLoginPref.addEventListener("click", () => {
+    localStorage.removeItem("skipWelcomeScreen");
+    localStorage.removeItem("isLoggedIn");
+    alert("Tela de login redefinida! Ela aparecerá no próximo acesso.");
+  });
+
+  // Eventos de Navegação do Menu
   btnGotoStart.addEventListener("click", () => showScreen(startMenu));
   btnGotoOptions.addEventListener("click", () => showScreen(optionsMenu));
   btnBackToMain.addEventListener("click", () => showScreen(mainMenu));
@@ -60,6 +113,7 @@ document.addEventListener("DOMContentLoaded", () => {
     alert("Você pode fechar o aplicativo agora.");
   });
 
+  // Seleção de Modos
   btnMode2P.addEventListener("click", () => {
     gameMode = "2p";
     startGame();
@@ -80,6 +134,7 @@ document.addEventListener("DOMContentLoaded", () => {
     startGame();
   });
 
+  // --- CONTROLE DE ÁUDIO ---
   function playTouchSound() {
     if (sfxToggle.checked && touchSound) {
       touchSound.currentTime = 0;
@@ -108,6 +163,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+  // --- LÓGICA DO TABULEIRO ---
   function startGame() {
     resetGame();
     showScreen(gameScreen);
@@ -136,8 +192,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const cell = cells[index];
     cell.textContent = player;
     cell.style.color = player === "X" ? "#38bdf8" : "#f43f5e";
-    
-    // Adiciona animação de pop
+
     cell.classList.add("pop");
     setTimeout(() => cell.classList.remove("pop"), 250);
 
@@ -240,7 +295,6 @@ document.addEventListener("DOMContentLoaded", () => {
       statusDisplay.textContent = `Vitória do Jogador ${winningPlayer}!`;
       isGameActive = false;
 
-      // Destaca as células vencedoras
       winningCombination.forEach(index => {
         cells[index].classList.add("win");
       });
@@ -267,4 +321,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   cells.forEach(cell => cell.addEventListener("click", handleCellClick));
   resetButton.addEventListener("click", resetGame);
+
+  // Executa a checagem de tela inicial ao carregar
+  checkInitialScreen();
 });
