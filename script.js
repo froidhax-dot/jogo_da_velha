@@ -1,3 +1,17 @@
+// Configuração do Firebase para o projeto velha-moderno[span_1](start_span)[span_1](end_span)
+const firebaseConfig = {
+  apiKey: "AIzaSyBHZieDnI_p1hJZopsZ2xH_Y8FDJGPC7Hg",
+  authDomain: "velha-moderno.firebaseapp.com",
+  projectId: "velha-moderno",
+  storageBucket: "velha-moderno.firebasestorage.app",
+  messagingSenderId: "808746347861",
+  appId: "1:808746347861:web:firebase"
+};
+
+// Inicializa o Firebase
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+
 document.addEventListener("DOMContentLoaded", () => {
   // Telas
   const welcomeScreen = document.getElementById("welcome-screen");
@@ -12,6 +26,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const btnGuest = document.getElementById("btn-guest");
   const dontShowAgainCheckbox = document.getElementById("dont-show-again");
   const btnResetLoginPref = document.getElementById("btn-reset-login-pref");
+  const userNameDisplay = document.getElementById("user-name-display");
 
   // Botões do Menu
   const btnGotoStart = document.getElementById("btn-goto-start");
@@ -58,43 +73,65 @@ document.addEventListener("DOMContentLoaded", () => {
     screen.classList.remove("hidden");
   }
 
-  // --- LÓGICA DE INICIALIZAÇÃO (LOGIN / CONVIDADO) ---
+  // --- LÓGICA DE INICIALIZAÇÃO E FIREBASE AUTH ---
   function checkInitialScreen() {
     const skipWelcome = localStorage.getItem("skipWelcomeScreen");
-    const userLoggedIn = localStorage.getItem("isLoggedIn");
 
-    if (skipWelcome === "true" || userLoggedIn === "true") {
-      showScreen(mainMenu);
-    } else {
-      showScreen(welcomeScreen);
-    }
+    // Verifica se já está autenticado no Firebase ou se escolheu pular
+    auth.onAuthStateChanged(user => {
+      if (user) {
+        userNameDisplay.textContent = user.isAnonymous ? "Convidado" : (user.displayName || user.email || "Jogador");
+        showScreen(mainMenu);
+      } else if (skipWelcome === "true") {
+        // Se marcou para não mostrar mas não logou, entra como anônimo padrão
+        auth.signInAnonymously().catch(() => {
+          showScreen(welcomeScreen);
+        });
+      } else {
+        showScreen(welcomeScreen);
+      }
+    });
   }
 
-  // Ação de Login (Placeholder para Firebase)
+  // Ação de Login com o Google
   btnLogin.addEventListener("click", () => {
-    // Por enquanto simula o login efetuado com sucesso
-    localStorage.setItem("isLoggedIn", "true");
-    if (dontShowAgainCheckbox.checked) {
-      localStorage.setItem("skipWelcomeScreen", "true");
-    }
-    alert("Login realizado com sucesso!");
-    showScreen(mainMenu);
+    const provider = new firebase.auth.GoogleAuthProvider();
+    auth.signInWithPopup(provider)
+      .then((result) => {
+        if (dontShowAgainCheckbox.checked) {
+          localStorage.setItem("skipWelcomeScreen", "true");
+        }
+        showScreen(mainMenu);
+      })
+      .catch((error) => {
+        console.error("Erro no login:", error);
+        alert("Não foi possível realizar o login com o Google. Verifique a configuração no console do Firebase.");
+      });
   });
 
-  // Ação de Convidado
+  // Ação de Convidado (Login Anônimo no Firebase)
   btnGuest.addEventListener("click", () => {
-    localStorage.setItem("isLoggedIn", "false");
-    if (dontShowAgainCheckbox.checked) {
-      localStorage.setItem("skipWelcomeScreen", "true");
-    }
-    showScreen(mainMenu);
+    auth.signInAnonymously()
+      .then(() => {
+        if (dontShowAgainCheckbox.checked) {
+          localStorage.setItem("skipWelcomeScreen", "true");
+        }
+        showScreen(mainMenu);
+      })
+      .catch((error) => {
+        console.error("Erro no login anônimo:", error);
+        // Fallback local caso o Auth anônimo não esteja ativado no console
+        showScreen(mainMenu);
+      });
   });
 
-  // Botão em Opções para resetar a preferência da tela de login (caso queira ver a tela novamente)
+  // Botão em Opções para resetar a preferência da tela de login
   btnResetLoginPref.addEventListener("click", () => {
     localStorage.removeItem("skipWelcomeScreen");
-    localStorage.removeItem("isLoggedIn");
-    alert("Tela de login redefinida! Ela aparecerá no próximo acesso.");
+    auth.signOut().then(() => {
+      alert("Sessão encerrada e tela de login redefinida!");
+      showScreen(welcomeScreen);
+    });
   });
 
   // Eventos de Navegação do Menu
@@ -322,6 +359,6 @@ document.addEventListener("DOMContentLoaded", () => {
   cells.forEach(cell => cell.addEventListener("click", handleCellClick));
   resetButton.addEventListener("click", resetGame);
 
-  // Executa a checagem de tela inicial ao carregar
+  // Executa a checagem inicial da sessão do Firebase
   checkInitialScreen();
 });
