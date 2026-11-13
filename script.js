@@ -1,4 +1,4 @@
-// Configuração do Firebase para o projeto velha-moderno[span_1](start_span)[span_1](end_span)
+// Configuração do Firebase para o projeto velha-moderno
 const firebaseConfig = {
   apiKey: "AIzaSyBHZieDnI_p1hJZopsZ2xH_Y8FDJGPC7Hg",
   authDomain: "velha-moderno.firebaseapp.com",
@@ -77,7 +77,17 @@ document.addEventListener("DOMContentLoaded", () => {
   function checkInitialScreen() {
     const skipWelcome = localStorage.getItem("skipWelcomeScreen");
 
-    // Verifica se já está autenticado no Firebase ou se escolheu pular
+    // Verifica o resultado do redirecionamento do Google primeiro
+    auth.getRedirectResult().then((result) => {
+      if (result.user) {
+        showScreen(mainMenu);
+        return;
+      }
+    }).catch((error) => {
+      console.error("Erro no redirect:", error);
+    });
+
+    // Escuta mudanças de estado do Firebase Auth
     auth.onAuthStateChanged(user => {
       if (user) {
         userNameDisplay.textContent = user.isAnonymous ? "Convidado" : (user.displayName || user.email || "Jogador");
@@ -93,20 +103,18 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Ação de Login com o Google
+  // Ação de Login com o Google (Usando Redirect para mobile)
   btnLogin.addEventListener("click", () => {
     const provider = new firebase.auth.GoogleAuthProvider();
-    auth.signInWithPopup(provider)
-      .then((result) => {
-        if (dontShowAgainCheckbox.checked) {
-          localStorage.setItem("skipWelcomeScreen", "true");
-        }
-        showScreen(mainMenu);
-      })
-      .catch((error) => {
-        console.error("Erro no login:", error);
-        alert("Não foi possível realizar o login com o Google. Verifique a configuração no console do Firebase.");
-      });
+    
+    if (dontShowAgainCheckbox.checked) {
+      localStorage.setItem("skipWelcomeScreen", "true");
+    }
+
+    auth.signInWithRedirect(provider).catch((error) => {
+      console.error("Erro no login:", error);
+      alert("Não foi possível realizar o login com o Google: " + error.message);
+    });
   });
 
   // Ação de Convidado (Login Anônimo no Firebase)
@@ -120,7 +128,6 @@ document.addEventListener("DOMContentLoaded", () => {
       })
       .catch((error) => {
         console.error("Erro no login anônimo:", error);
-        // Fallback local caso o Auth anônimo não esteja ativado no console
         showScreen(mainMenu);
       });
   });
@@ -138,227 +145,4 @@ document.addEventListener("DOMContentLoaded", () => {
   btnGotoStart.addEventListener("click", () => showScreen(startMenu));
   btnGotoOptions.addEventListener("click", () => showScreen(optionsMenu));
   btnBackToMain.addEventListener("click", () => showScreen(mainMenu));
-  btnBackToStart.addEventListener("click", () => showScreen(startMenu));
-  btnBackFromOptions.addEventListener("click", () => showScreen(mainMenu));
-  btnQuitGame.addEventListener("click", () => {
-    stopMusic();
-    showScreen(mainMenu);
-  });
-
-  btnExit.addEventListener("click", () => {
-    window.close();
-    alert("Você pode fechar o aplicativo agora.");
-  });
-
-  // Seleção de Modos
-  btnMode2P.addEventListener("click", () => {
-    gameMode = "2p";
-    startGame();
-  });
-
-  btnModeIA.addEventListener("click", () => {
-    gameMode = "ia";
-    showScreen(difficultyMenu);
-  });
-
-  btnDiffEasy.addEventListener("click", () => {
-    difficulty = "easy";
-    startGame();
-  });
-
-  btnDiffHard.addEventListener("click", () => {
-    difficulty = "hard";
-    startGame();
-  });
-
-  // --- CONTROLE DE ÁUDIO ---
-  function playTouchSound() {
-    if (sfxToggle.checked && touchSound) {
-      touchSound.currentTime = 0;
-      touchSound.play().catch(() => {});
-    }
-  }
-
-  function startMusic() {
-    if (musicToggle.checked && bgMusic) {
-      bgMusic.play().catch(() => {});
-    }
-  }
-
-  function stopMusic() {
-    if (bgMusic) {
-      bgMusic.pause();
-      bgMusic.currentTime = 0;
-    }
-  }
-
-  musicToggle.addEventListener("change", () => {
-    if (musicToggle.checked) {
-      bgMusic.play().catch(() => {});
-    } else {
-      bgMusic.pause();
-    }
-  });
-
-  // --- LÓGICA DO TABULEIRO ---
-  function startGame() {
-    resetGame();
-    showScreen(gameScreen);
-    startMusic();
-  }
-
-  function handleCellClick(e) {
-    const cell = e.target;
-    const index = parseInt(cell.getAttribute("data-index"));
-
-    if (boardState[index] !== "" || !isGameActive) return;
-    if (gameMode === "ia" && currentPlayer === "O") return;
-
-    playTouchSound();
-    makeMove(index, currentPlayer);
-
-    if (isGameActive) {
-      if (gameMode === "ia" && currentPlayer === "O") {
-        setTimeout(handleAIMove, 400);
-      }
-    }
-  }
-
-  function makeMove(index, player) {
-    boardState[index] = player;
-    const cell = cells[index];
-    cell.textContent = player;
-    cell.style.color = player === "X" ? "#38bdf8" : "#f43f5e";
-
-    cell.classList.add("pop");
-    setTimeout(() => cell.classList.remove("pop"), 250);
-
-    evaluateGame();
-
-    if (isGameActive) {
-      currentPlayer = currentPlayer === "X" ? "O" : "X";
-      turnDisplay.textContent = currentPlayer;
-    }
-  }
-
-  function handleAIMove() {
-    if (!isGameActive) return;
-
-    let index = difficulty === "easy" ? getRandomMove() : getBestMoveMinimax();
-
-    if (index !== undefined) {
-      playTouchSound();
-      makeMove(index, "O");
-    }
-  }
-
-  function getRandomMove() {
-    const emptyCells = boardState
-      .map((val, idx) => (val === "" ? idx : null))
-      .filter(val => val !== null);
-
-    if (emptyCells.length === 0) return;
-    return emptyCells[Math.floor(Math.random() * emptyCells.length)];
-  }
-
-  function getBestMoveMinimax() {
-    let bestScore = -Infinity;
-    let bestMove;
-
-    for (let i = 0; i < boardState.length; i++) {
-      if (boardState[i] === "") {
-        boardState[i] = "O";
-        let score = minimax(boardState, 0, false);
-        boardState[i] = "";
-        if (score > bestScore) {
-          bestScore = score;
-          bestMove = i;
-        }
-      }
-    }
-    return bestMove;
-  }
-
-  function minimax(board, depth, isMaximizing) {
-    if (checkWin(board, "O")) return 10 - depth;
-    if (checkWin(board, "X")) return depth - 10;
-    if (!board.includes("")) return 0;
-
-    if (isMaximizing) {
-      let maxScore = -Infinity;
-      for (let i = 0; i < board.length; i++) {
-        if (board[i] === "") {
-          board[i] = "O";
-          let score = minimax(board, depth + 1, false);
-          board[i] = "";
-          maxScore = Math.max(score, maxScore);
-        }
-      }
-      return maxScore;
-    } else {
-      let minScore = Infinity;
-      for (let i = 0; i < board.length; i++) {
-        if (board[i] === "") {
-          board[i] = "X";
-          let score = minimax(board, depth + 1, true);
-          board[i] = "";
-          minScore = Math.min(score, minScore);
-        }
-      }
-      return minScore;
-    }
-  }
-
-  function checkWin(board, player) {
-    return WINNING_COMBINATIONS.some(combination => {
-      return combination.every(index => board[index] === player);
-    });
-  }
-
-  function evaluateGame() {
-    let winningCombination = null;
-    let winningPlayer = "";
-
-    for (let i = 0; i < WINNING_COMBINATIONS.length; i++) {
-      const [a, b, c] = WINNING_COMBINATIONS[i];
-      if (boardState[a] && boardState[a] === boardState[b] && boardState[a] === boardState[c]) {
-        winningCombination = WINNING_COMBINATIONS[i];
-        winningPlayer = boardState[a];
-        break;
-      }
-    }
-
-    if (winningCombination) {
-      statusDisplay.textContent = `Vitória do Jogador ${winningPlayer}!`;
-      isGameActive = false;
-
-      winningCombination.forEach(index => {
-        cells[index].classList.add("win");
-      });
-      return;
-    }
-
-    if (!boardState.includes("")) {
-      statusDisplay.textContent = "Empate!";
-      isGameActive = false;
-      return;
-    }
-  }
-
-  function resetGame() {
-    boardState = ["", "", "", "", "", "", "", "", ""];
-    currentPlayer = "X";
-    isGameActive = true;
-    statusDisplay.innerHTML = 'Vez do jogador: <span id="turn">X</span>';
-    cells.forEach(cell => {
-      cell.textContent = "";
-      cell.classList.remove("win", "pop");
-    });
-  }
-
-  cells.forEach(cell => cell.addEventListener("click", handleCellClick));
-  resetButton.addEventListener("click", resetGame);
-
-  // Executa a checagem inicial da sessão do Firebase
-  checkInitialScreen();
-});
+  btnBackToStart.addEventListener("click", () => show
